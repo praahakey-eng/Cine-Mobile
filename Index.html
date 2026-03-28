@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineMobile Pro Max</title>
+    <style>
+        body { background-color: #0b0b0b; color: white; font-family: sans-serif; margin: 0; padding-bottom: 50px; }
+        header { padding: 20px; text-align: center; background: #e50914; position: sticky; top: 0; z-index: 100; }
+        
+        /* Search Box Style */
+        .search-container { padding: 15px; text-align: center; }
+        #search { width: 80%; padding: 12px; border-radius: 25px; border: none; outline: none; background: #222; color: white; font-size: 16px; border: 1px solid #444; }
+
+        .movie-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 15px; }
+        
+        .movie-card { background: #1c1c1c; border-radius: 12px; overflow: hidden; border: 1px solid #333; cursor: pointer; transition: 0.3s; }
+        .movie-card:hover { transform: translateY(-5px); border-color: #e50914; }
+        .movie-card img { width: 100%; height: 240px; object-fit: cover; }
+        .info { padding: 10px; text-align: center; }
+        .info h3 { font-size: 14px; margin: 5px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .rating { color: #ffbd00; font-weight: bold; }
+
+        /* Pop-up (Modal) Style */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
+        .modal-content { background: #1c1c1c; padding: 20px; border-radius: 15px; max-width: 400px; width: 100%; text-align: center; position: relative; }
+        .close-btn { position: absolute; top: 10px; right: 15px; font-size: 25px; cursor: pointer; color: #e50914; }
+        .modal-content img { width: 100%; border-radius: 10px; margin-bottom: 15px; }
+        .modal-content p { font-size: 14px; color: #ccc; line-height: 1.5; }
+        .btn-trailer { display: inline-block; margin-top: 15px; padding: 10px 20px; background: #e50914; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>CINE<span>MOBILE</span></h1>
+    </header>
+
+    <div class="search-container">
+        <input type="text" id="search" placeholder="Movie ka naam dhoondein..." onkeyup="searchMovie()">
+    </div>
+
+    <main id="movie-grid" class="movie-grid"></main>
+
+    <div id="movieModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <img id="modalImg" src="" alt="">
+            <h2 id="modalTitle"></h2>
+            <p id="modalDesc"></p>
+            <a id="modalTrailer" href="#" target="_blank" class="btn-trailer">Watch Trailer 🍿</a>
+        </div>
+    </div>
+
+    <script>
+        const movies = [
+            { name: "Pushpa 2", img: "https://upload.wikimedia.org/wikipedia/en/1/11/Pushpa_2_The_Rule_poster.jpg", rating: "9.0", desc: "Pushpa Raj is back to rule the red sandalwood syndicate.", trailer: "https://www.youtube.com/results?search_query=pushpa+2+trailer" },
+            { name: "Animal", img: "https://upload.wikimedia.org/wikipedia/en/9/90/Animal_%282023_film%29_poster.jpg", rating: "8.5", desc: "A son's intense and violent love for his father.", trailer: "https://www.youtube.com/results?search_query=animal+trailer" },
+            { name: "Stree 2", img: "https://upload.wikimedia.org/wikipedia/en/d/df/Stree_2_poster.jpg", rating: "8.2", desc: "Sarkata bhoot is back in Chanderi! Can Vicky save them?", trailer: "https://www.youtube.com/results?search_query=stree+2+trailer" },
+            { name: "Kalki 2898 AD", img: "https://upload.wikimedia.org/wikipedia/en/4/4c/Kalki_2898_AD_poster.jpg", rating: "8.8", desc: "The future begins in the mythological city of Kasi.", trailer: "https://www.youtube.com/results?search_query=kalki+2898+ad+trailer" },
+            { name: "Jawan", img: "https://upload.wikimedia.org/wikipedia/en/3/39/Jawan_film_poster.jpg", rating: "8.0", desc: "A man is driven by a personal vendetta to rectify the wrongs in society.", trailer: "https://www.youtube.com/results?search_query=jawan+trailer" },
+            { name: "Avatar 2", img: "https://upload.wikimedia.org/wikipedia/en/5/54/Avatar_The_Way_of_Water_poster.jpg", rating: "7.9", desc: "Jake Sully and Neytiri must protect their family underwater.", trailer: "https://www.youtube.com/results?search_query=avatar+2+trailer" },
+            { name: "Bahubali 2", img: "https://upload.wikimedia.org/wikipedia/en/f/f0/Baahubali_2_The_Conclusion_2017_poster.jpg", rating: "9.2", desc: "Why Kattappa killed Bahubali? The epic conclusion.", trailer: "https://www.youtube.com/results?search_query=bahubali+2+trailer" },
+            { name: "RRR", img: "https://upload.wikimedia.org/wikipedia/en/d/d7/RRR_Poster.jpg", rating: "8.9", desc: "Two legendary revolutionaries fight for their country.", trailer: "https://www.youtube.com/results?search_query=rrr+trailer" }
+        ];
+
+        const grid = document.getElementById('movie-grid');
+
+        function displayMovies(data) {
+            grid.innerHTML = ""; 
+            data.forEach(movie => {
+                const card = document.createElement('div');
+                card.classList.add('movie-card');
+                card.onclick = () => openModal(movie);
+                card.innerHTML = `
+                    <img src="${movie.img}" alt="${movie.name}">
+                    <div class="info">
+                        <h3>${movie.name}</h3>
+                        <div class="rating">⭐ ${movie.rating}</div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Search Function
+        function searchMovie() {
+            const term = document.getElementById('search').value.toLowerCase();
+            const filtered = movies.filter(m => m.name.toLowerCase().includes(term));
+            displayMovies(filtered);
+        }
+
+        // Modal (Pop-up) Functions
+        function openModal(movie) {
+            document.getElementById('modalTitle').innerText = movie.name;
+            document.getElementById('modalImg').src = movie.img;
+            document.getElementById('modalDesc').innerText = movie.desc;
+            document.getElementById('modalTrailer').href = movie.trailer;
+            document.getElementById('movieModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('movieModal').style.display = 'none';
+        }
+
+        displayMovies(movies);
+    </script>
+</body>
+</html>
